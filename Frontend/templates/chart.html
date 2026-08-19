@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Fake Indian Currency Detection{% endblock %}
+
+{% block favicon %}
+<link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f2422e'/><path d='M25 25 H45 V45 H25 Z M55 25 H75 V45 H55 Z M25 55 H45 V75 H25 Z M55 55 H75 V75 H55 Z' stroke='white' stroke-width='8' fill='none'/></svg>">
+{% endblock %}
+
+{% block body_class %}bg-light{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    {% set active_page = 'chart' %}
+    {% include "includes/sidebar.html" %}
+
+    <main class="main-content flex-grow-1 d-flex flex-column">
+        <nav class="navbar-simple gap-3">
+            <button class="btn btn-link p-0 d-lg-none me-auto" onclick="toggleSidebar()" title="Open Menu">
+                <i class="ph ph-list fs-4"></i>
+            </button>
+            <button class="btn btn-link p-0" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Dark Mode">
+                <i class="ph ph-moon-stars fs-5"></i>
+            </button>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="ph ph-sign-out me-1"></i> Logout
+            </a>
+        </nav>
+
+        <div class="container-fluid p-4" id="dashboardContent">
+            <header class="mb-4 fade-in">
+                <h1 class="fw-bold"><span class="text-primary">System</span> Dashboard</h1>
+                <p class="text-muted">Real-time visualization of scan analytics and system metrics.</p>
+            </header>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm p-4 h-100">
+                        <h5 class="fw-bold mb-4">Scan Distribution (History)</h5>
+                        <div id="piechart_3d" style="width: 100%; height: 320px;"></div>
+                        <div id="noDataMessage" class="d-none text-center empty-state-container mt-3 p-4">
+                            <i class="ph ph-database text-muted floating-icon-empty mb-2" style="font-size: 3rem;"></i>
+                            <h6 class="fw-bold mb-1">No Data Available</h6>
+                            <p class="text-muted small mb-3">Run a detection to generate insights.</p>
+                            <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm px-4 rounded-pill shadow-sm">
+                                <i class="ph ph-scan me-1"></i> Scan Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm p-4 h-100">
+                        <h5 class="fw-bold mb-4">System Accuracy Overview</h5>
+                        <div id="columnchart_values" style="width: 100%; height: 320px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include "includes/footer.html" %}
+    </main>
+</div>
+
+{% include "includes/history_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(initializeCharts);
+
+    function initializeCharts() {
+        const theme = document.documentElement.getAttribute('data-theme') || 'light';
+        const isDark = theme === 'dark';
+
+        const textColor = isDark ? '#f8fafc' : '#1e293b';
+        const mutedColor = isDark ? '#94a3b8' : '#64748b';
+        const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+        // Data from Database provided via Jinja
+        const totalScans = parseInt("{{ total_scans | default(0) }}", 10);
+        const realCount = parseInt("{{ real_count | default(0) }}", 10);
+        const fakeCount = parseInt("{{ fake_count | default(0) }}", 10);
+        const errorCount = parseInt("{{ error_count | default(0) }}", 10);
+
+        if (totalScans === 0) {
+            drawScanDistributionChart({ 'Real': 1, 'Fake': 1, 'Error': 0 }, true, textColor, mutedColor);
+            document.getElementById('noDataMessage').classList.remove('d-none');
+        } else {
+            const counts = { 'Real': realCount, 'Fake': fakeCount, 'Error': errorCount };
+            drawScanDistributionChart(counts, false, textColor, mutedColor);
+        }
+
+        drawAccuracyChart(textColor, mutedColor, gridColor);
+    }
+
+    function drawScanDistributionChart(counts, isPlaceholder, textColor, mutedColor) {
+        var data = google.visualization.arrayToDataTable([
+            ['Status', 'Count'],
+            ['Real', counts['Real']],
+            ['Fake', counts['Fake']],
+            ['Other', counts['Error']]
+        ]);
+
+        var options = {
+            title: isPlaceholder ? 'Sample Data Distribution' : 'Classification Distribution',
+            titleTextStyle: { color: textColor, fontSize: 16, bold: true },
+            is3D: true,
+            backgroundColor: 'transparent',
+            chartArea: { width: '100%', height: '80%' },
+            colors: isPlaceholder ? ['#e2e8f0', '#cbd5e1', '#94a3b8'] : ['#16A34A', '#DC2626', '#F59E0B'],
+            legend: { position: 'bottom', textStyle: { color: mutedColor } },
+            tooltip: { isHtml: true }
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+        chart.draw(data, options);
+    }
+
+    function drawAccuracyChart(textColor, mutedColor, gridColor) {
+        var data = google.visualization.arrayToDataTable([
+            ["Metric", "Percentage", { role: "style" }],
+            ["Accuracy", 97.2, "#10b981"],
+            ["Precision", 94.1, "#3b82f6"],
+            ["Recall", 97.2, "#ef4444"],
+            ["F1-Score", 97.2, "#f59e0b"]
+        ]);
+
+        var view = new google.visualization.DataView(data);
+        view.setColumns([0, 1,
+            {
+                calc: "stringify",
+                sourceColumn: 1,
+                type: "string",
+                role: "annotation"
+            },
+            2]);
+
+        var options = {
+            title: "Model Capabilities Overview",
+            titleTextStyle: { color: textColor, fontSize: 16, bold: true },
+            width: "100%",
+            height: 400,
+            bar: { groupWidth: "75%" },
+            legend: { position: "none" },
+            backgroundColor: 'transparent',
+            tooltip: { isHtml: true },
+            annotations: { textStyle: { color: textColor } },
+            vAxis: {
+                minValue: 0,
+                maxValue: 100,
+                textStyle: { color: mutedColor },
+                gridlines: { color: gridColor }
+            },
+            hAxis: {
+                textStyle: { color: mutedColor }
+            },
+            chartArea: { width: '85%', height: '70%' }
+        };
+        var chart = new google.visualization.ColumnChart(document.getElementById("columnchart_values"));
+        chart.draw(view, options);
+    }
+
+    // Debounce to prevent redundant redraws
+    function debounce(func, wait) {
+        let timeout;
+        return function () {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
+    window.addEventListener('resize', debounce(initializeCharts, 250));
+
+    // Listen for theme changes with a custom observer if needed, 
+    // or just rely on the toggleTheme function call if we can wrap it.
+    // Given the current setup, we'll add a listener to the theme toggle execution.
+    const originalToggle = window.toggleTheme;
+    window.toggleTheme = function () {
+        if (typeof originalToggle === 'function') originalToggle();
+        setTimeout(initializeCharts, 100); // Wait for DOM attribute to update
+    };
+</script>
+{% endblock %}

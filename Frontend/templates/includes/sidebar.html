@@ -1,0 +1,25 @@
+<aside class="sidebar">
+    <a href="{{ url_for('first') }}" class="sidebar-logo logo-link d-flex align-items-center text-decoration-none">
+        <div class="logo-icon me-2">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="8" fill="#f2422e"/>
+                <path d="M10 22V10H22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 14H18M14 18H18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="logo-text">
+            Verify<span class="text-primary">Note</span>
+        </div>
+    </a>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('index') }}" class="side-link {% if active_page == 'index' %}active{% endif %}">
+            <i class="ph ph-scan"></i> Scan note
+        </a>
+        <a href="{{ url_for('performance') }}" class="side-link {% if active_page == 'performance' %}active{% endif %}">
+            <i class="ph ph-chart-line-up"></i> Analytics
+        </a>
+        <a href="{{ url_for('chart') }}" class="side-link {% if active_page == 'chart' %}active{% endif %}">
+            <i class="ph ph-grid-four"></i> Dashboard
+        </a>
+    </nav>
+</aside>

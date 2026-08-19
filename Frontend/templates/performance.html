@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Analytics - Fake Indian Currency Detection{% endblock %}
+
+{% block favicon %}
+<link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f2422e'/><path d='M20 80 H80 M20 80 L40 50 L60 65 L80 20' stroke='white' stroke-width='8' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+{% endblock %}
+
+{% block body_class %}bg-light{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    {% set active_page = 'performance' %}
+    {% include "includes/sidebar.html" %}
+
+    <main class="main-content flex-grow-1 d-flex flex-column">
+        <nav class="navbar-simple gap-3">
+            <button class="btn btn-link p-0 d-lg-none me-auto" onclick="toggleSidebar()" title="Open Menu">
+                <i class="ph ph-list fs-4"></i>
+            </button>
+            <button class="btn btn-link p-0" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Dark Mode">
+                <i class="ph ph-moon-stars fs-5"></i>
+            </button>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="ph ph-sign-out me-1"></i> Logout
+            </a>
+        </nav>
+
+        <div class="container-fluid p-4">
+            <header class="mb-4 fade-in">
+                <h1 class="fw-bold"><span class="text-primary">Model</span> Performance</h1>
+                <p class="text-muted">Detailed evaluation metrics of the Deep CNN Architecture.</p>
+            </header>
+
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card glass-card-success shadow-sm p-3 text-center fade-in">
+                        <i class="ph ph-target fs-1 mb-2"></i>
+                        <h6 class="text-uppercase smaller opacity-75 fw-bold">Accuracy</h6>
+                        <h2 class="fw-bold mb-0"><span class="counter-anim" data-target="97.2">0.0</span>%</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card glass-card-info shadow-sm p-3 text-center fade-in" style="animation-delay: 0.1s">
+                        <i class="ph ph-crosshair-simple fs-1 mb-2"></i>
+                        <h6 class="text-uppercase smaller opacity-75 fw-bold">Precision</h6>
+                        <h2 class="fw-bold mb-0"><span class="counter-anim" data-target="94.1">0.0</span>%</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card glass-card-danger shadow-sm p-3 text-center fade-in" style="animation-delay: 0.2s">
+                        <i class="ph ph-arrows-in fs-1 mb-2"></i>
+                        <h6 class="text-uppercase smaller opacity-75 fw-bold">Recall</h6>
+                        <h2 class="fw-bold mb-0"><span class="counter-anim" data-target="97.2">0.0</span>%</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card glass-card-warning shadow-sm p-3 text-center fade-in"
+                        style="animation-delay: 0.3s">
+                        <i class="ph ph-star fs-1 mb-2"></i>
+                        <h6 class="text-uppercase smaller opacity-75 fw-bold">F1-Score</h6>
+                        <h2 class="fw-bold mb-0"><span class="counter-anim" data-target="97.2">0.0</span>%</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card chart-card border-0 shadow-sm p-4 h-100 fade-in">
+                        <div class="text-center">
+                            <h5 class="fw-bold mb-4">Model Confusion Matrix</h5>
+                            <div class="matrix-img-container bg-light rounded-4 p-3 d-inline-block shadow-inner"
+                                style="max-width: 100%;">
+                                <img src="{{ url_for('static', filename='matrix_evaluated.png') }}" class="img-fluid rounded-3"
+                                    style="max-height: 500px;">
+                            </div>
+                        </div>
+                        <div class="mt-4 mx-auto" style="max-width: 800px;">
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between small mb-2">
+                                        <span class="fw-bold">Recall (Genuine)</span>
+                                        <span class="badge bg-success text-white">99%</span>
+                                    </div>
+                                    <div class="progress mb-4" style="height: 10px; border-radius: 5px;">
+                                        <div class="progress-bar bg-success" style="width: 99%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between small mb-2">
+                                        <span class="fw-bold">Recall (Counterfeit)</span>
+                                        <span class="badge bg-danger text-white">94%</span>
+                                    </div>
+                                    <div class="progress mb-4" style="height: 10px; border-radius: 5px;">
+                                        <div class="progress-bar bg-danger" style="width: 94%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between small mb-2">
+                                        <span class="fw-bold">Recall (Other)</span>
+                                        <span class="badge bg-warning text-white">94%</span>
+                                    </div>
+                                    <div class="progress mb-4" style="height: 10px; border-radius: 5px;">
+                                        <div class="progress-bar bg-warning" style="width: 94%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted text-center small mt-3">The matrix above illustrates the high precision
+                                of the Xception model across Real, Counterfeit, and Other classes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include "includes/footer.html" %}
+    </main>
+</div>
+
+{% include "includes/history_modal.html" %}
+{% endblock %}

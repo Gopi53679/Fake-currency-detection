@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Result - Fake Indian Currency Detection{% endblock %}
+
+{% block favicon %}
+{% if prediction == 'REAL' %}
+<link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2310b981'/><path d='M30 50 L45 65 L70 35' stroke='white' stroke-width='12' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+{% elif prediction == 'FAKE' %}
+<link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23ef4444'/><path d='M30 30 L70 70 M70 30 L30 70' stroke='white' stroke-width='12' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+{% else %}
+<link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f59e0b'/><path d='M50 25 V60 M50 75 V80' stroke='white' stroke-width='10' fill='none' stroke-linecap='round'/></svg>">
+{% endif %}
+{% endblock %}
+
+{% set bar_width = score if score != 'N/A' else 0 %}
+{% block body_class %}bg-light{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    {% set active_page = 'index' %}
+    {% include "includes/sidebar.html" %}
+
+    <main class="main-content flex-grow-1 d-flex flex-column">
+        <!-- Navigation Header -->
+        <nav class="navbar-simple gap-3">
+            <button class="btn btn-link p-0 d-lg-none me-auto" onclick="toggleSidebar()" title="Open Menu">
+                <i class="ph ph-list fs-4"></i>
+            </button>
+            <button class="btn btn-link p-0" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Dark Mode">
+                <i class="ph ph-moon-stars fs-5"></i>
+            </button>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="ph ph-sign-out me-1"></i> Logout
+            </a>
+        </nav>
+
+        <div class="container-fluid p-4">
+            <header class="mb-5 fade-in">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-sm rounded-circle p-2"
+                        title="Go Back">
+                        <i class="ph ph-arrow-left"></i>
+                    </a>
+                    <h1 class="fw-bold mb-0">Analysis <span class="text-primary">Result</span></h1>
+                </div>
+            </header>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-10">
+                    {% set is_error = prediction == 'NOT CURRENCY' %}
+                    {% set container_class = 'border-warning-custom' if is_error else ('border-success' if prediction ==
+                    'REAL' else 'border-danger') %}
+                    {% set badge_class = 'bg-warning-soft' if is_error else ('bg-success-soft' if prediction == 'REAL'
+                    else 'bg-danger-soft') %}
+                    {% set text_class = 'text-warning-custom' if is_error else ('text-success' if prediction == 'REAL'
+                    else 'text-danger') %}
+                    {% set status_text = 'INVALID' if is_error else ('GENUINE' if prediction == 'REAL' else
+                    'COUNTERFEIT') %}
+                    {% set fs_class = 'fs-2' if prediction|length > 15 else 'fs-1' %}
+
+                    <div class="card result-card border-0 shadow-lg p-0 overflow-hidden fade-in">
+                        <div class="row g-0">
+                            <!-- Image Preview Column -->
+                            <div
+                                class="col-md-5 result-image-pane d-flex align-items-center justify-content-center p-4">
+                                <div class="position-relative d-inline-block">
+                                    <img src="{{ url_for('static', filename='tests/' + filename) }}"
+                                        class="img-fluid rounded-4 shadow-sm border"
+                                        style="max-height: 400px; object-fit: contain;" alt="Result Preview">
+                                    <div class="position-absolute top-0 start-50 translate-middle">
+                                        {% if prediction == 'FAKE' %}
+                                        <i
+                                            class="ph ph-x-circle-fill text-danger fs-1 shadow-sm bg-white rounded-circle"></i>
+                                        {% elif is_error %}
+                                        <i
+                                            class="ph ph-warning-circle-fill text-warning-custom fs-1 shadow-sm bg-white rounded-circle"></i>
+                                        {% else %}
+                                        <i
+                                            class="ph ph-check-circle-fill text-success fs-1 shadow-sm bg-white rounded-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Information Column -->
+                            <div class="col-md-7 p-5 d-flex flex-column justify-content-center">
+                                <div class="mb-2">
+                                    <span
+                                        class="status-badge py-1 px-3 smaller {{ badge_class }} fw-bold rounded-pill text-uppercase tracking-wider">
+                                        {{ status_text }}
+                                    </span>
+                                </div>
+                                <h2 class="display-5 fw-bold {{ text_class }} {{ fs_class }} mb-3" id="prediction-text">
+                                    {{prediction}}
+                                </h2>
+
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <i class="ph ph-fingerprint text-primary opacity-75"></i>
+                                        <span class="text-muted small fw-bold text-uppercase tracking-wider">Recognition
+                                            Confidence</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="progress flex-grow-1"
+                                            style="height: 12px; border-radius: 6px; background: rgba(0,0,0,0.05);">
+                                            <div class="progress-bar {{ 'bg-success' if prediction == 'REAL' else ('bg-warning-custom' if is_error else 'bg-danger') }}"
+                                                id="predictionProgressBar" role="progressbar"
+                                                data-width="{{ bar_width }}"
+                                                style="width: 0%; border-radius: 6px; transition: width 1.5s ease-in-out;"
+                                                aria-valuenow="{{ bar_width }}" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-info-soft text-info fw-bold py-2 px-3 shadow-sm">
+                                            <i class="ph ph-trend-up me-1"></i> {{ score if score != 'N/A' else '0.00'
+                                            }}%
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 border-top">
+                                    <div class="row text-center g-3">
+                                        <div class="col-12">
+                                            <a href="{{ url_for('index') }}" class="btn btn-primary w-100 py-3">
+                                                <i class="ph ph-arrows-clockwise me-2"></i> Scan New Banknote
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-auto">
+            {% include "includes/footer.html" %}
+        </div>
+    </main>
+</div>
+
+{% include "includes/history_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- Dynamic history saving is now handled natively via the backend database upon submission. -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const pb = document.getElementById('predictionProgressBar');
+        if (pb) {
+            const width = pb.getAttribute('data-width');
+            // Small delay to ensure transition animation triggers
+            setTimeout(() => {
+                pb.style.width = width + '%';
+            }, 100);
+        }
+    });
+</script>
+{% endblock %}

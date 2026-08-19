@@ -1,0 +1,10 @@
+{
+    "model_labels": {
+        "0": "Fake",
+        "1": "Other",
+        "2": "Real"
+    },
+    "error_messages": {
+        "not_currency": "NOT CURRENCY"
+    }
+}

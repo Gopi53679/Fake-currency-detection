@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Currency - Fake Indian Currency Detection{% endblock %}
+
+{% block favicon %}
+<link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f2422e'/><path d='M20 30 H80 V70 H20 Z M35 30 V20 H65 V30' stroke='white' stroke-width='8' fill='none' stroke-linejoin='round'/><circle cx='50' cy='50' r='10' stroke='white' stroke-width='5' fill='none'/></svg>">
+{% endblock %}
+
+{% block body_class %}bg-light{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    {% set active_page = 'index' %}
+    {% include "includes/sidebar.html" %}
+
+    <main class="main-content flex-grow-1 d-flex flex-column">
+        <nav class="navbar-simple gap-3">
+            <button class="btn btn-link p-0 d-lg-none me-auto" onclick="toggleSidebar()" title="Open Menu">
+                <i class="ph ph-list fs-4"></i>
+            </button>
+            <button class="btn btn-link p-0" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Dark Mode">
+                <i class="ph ph-moon-stars fs-5"></i>
+            </button>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="ph ph-sign-out me-1"></i> Logout
+            </a>
+        </nav>
+
+        <div class="container-fluid p-4">
+            <header class="mb-4 fade-in">
+                <h1 class="fw-bold"><span class="text-primary">Detection</span> Space</h1>
+                <p class="text-muted">Analyze ₹500 and ₹2000 Indian banknotes for authenticity using Deep CNN.</p>
+            </header>
+
+            <div class="row g-4">
+                <div class="col-lg-8 col-12">
+                    <div class="card border-0 shadow-sm p-3 p-md-4 h-100 fade-in">
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold"><span class="text-primary">Scan</span> note</h3>
+                            <div class="d-flex align-items-center justify-content-center gap-2 mt-1">
+                                <span class="badge bg-light text-muted border fw-normal px-2">₹500</span>
+                                <span class="badge bg-light text-muted border fw-normal px-2">₹2000</span>
+                                <span class="text-muted smaller">Supported</span>
+                            </div>
+                        </div>
+
+                        <form action="/submit" method="POST" enctype="multipart/form-data"
+                            onsubmit="startAnalysisFeedback()">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="mb-4" id="uploadArea">
+                                <div class="upload-zone text-center" id="dropZone" tabindex="0" role="button"
+                                    aria-label="Upload banknote image"
+                                    onclick="document.getElementById('imagefile').click();">
+                                    <i class="ph ph-cloud-arrow-up mb-3"></i>
+                                    <h4 class="mb-2"><span class="text-primary">Select</span> note Image</h4>
+                                    <p class="text-muted small">Drag and drop or click to browse.</p>
+                                    <input type="file" name="my_image" id="imagefile" accept="image/*"
+                                        onchange="previewImage();" required style="display: none;">
+                                </div>
+                            </div>
+
+                            <div id="previewContainer" class="mb-4 text-center d-none">
+                                <div class="position-relative d-inline-block">
+                                    <img id="imagePreview" class="img-fluid rounded-4 shadow-sm"
+                                        style="max-height: 250px;">
+                                    <button type="button"
+                                        class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                                        onclick="resetUpload(); event.stopPropagation();">
+                                        <i class="ph ph-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button id="submitBtn" class="btn btn-primary btn-lg w-100 py-3 mt-2" type="submit"
+                                disabled>
+                                <span id="submitBtnContent">
+                                    <i class="ph ph-shield-check me-2"></i> Run Detection Analysis
+                                </span>
+                                <span id="submitBtnLoading" class="d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"
+                                        aria-hidden="true"></span>
+                                    Analysing Banknote...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-12">
+                    <div class="card border-0 shadow-sm p-4 h-100 fade-in">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0">Recent Scans</h5>
+                            <span class="badge bg-primary rounded-pill">History</span>
+                        </div>
+                        <div class="recent-scans-list">
+                            {% if recent_scans %}
+                            {% for scan in recent_scans[:6] %}
+                            {% set statusClass = 'text-success' if scan.prediction == 'REAL' else ('text-danger' if
+                            scan.prediction == 'FAKE' else 'text-warning-custom') %}
+                            {% set badgeClass = 'bg-success-soft text-success' if scan.prediction == 'REAL' else
+                            ('bg-danger-soft text-danger' if scan.prediction == 'FAKE' else 'bg-warning-soft
+                            text-warning') %}
+                            <div class="recent-scan-item animate-history-item d-flex align-items-center justify-content-between p-2 rounded-3 mb-2"
+                                onclick="viewScanResult('{{ scan.prediction }}', '{{ scan.filename }}', '{{ scan.confidence }}')"
+                                style="cursor: pointer; background: var(--bg-main);">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ url_for('static', filename='tests/' + scan.filename) }}"
+                                        class="rounded-2"
+                                        style="width: 38px; height: 38px; object-fit: cover; border: 1px solid rgba(0,0,0,0.05);"
+                                        alt="Scan">
+                                    <div>
+                                        <div class="fw-bold fs-7 {{ statusClass }}">{{ scan.prediction }}</div>
+                                        <div class="text-muted" style="font-size: 0.65rem; opacity: 0.7;">{{
+                                            scan.date_scanned.strftime('%I:%M %p') }} • #{{ '%06d' % scan.id }}</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if scan.confidence %}
+                                    <div class="recent-scan-score-badge {{ badgeClass }} py-1 px-2 rounded-pill fs-8 shadow-sm"
+                                        style="font-size: 0.65rem;">{{ '%0.1f'|format(scan.confidence) }}%</div>
+                                    {% endif %}
+                                    <button class="btn btn-sm text-danger opacity-50 p-1 border-0 delete-scan-btn"
+                                        onclick="deleteScan('{{ scan.id }}'); event.stopPropagation();"
+                                        data-scan-id="{{ scan.id }}" title="Delete Scan">
+                                        <i class="ph ph-trash" style="font-size: 0.9rem;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-center py-4 text-muted small">
+                                <i class="ph ph-clock-counter-clockwise fs-1 opacity-50 mb-2"></i><br>
+                                No active scans recorded
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mt-auto text-center pt-4">
+                            <a href="javascript:void(0)" onclick="toggleHistory()"
+                                class="btn btn-link btn-sm text-decoration-none">View Full History</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include "includes/footer.html" %}
+    </main>
+</div>
+
+{% include "includes/history_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

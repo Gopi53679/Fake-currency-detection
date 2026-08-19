@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Fake Indian Currency Detection{% endblock %}
+
+{% block body_class %}bg-light{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column min-vh-100 animated-mesh-bg">
+    <!-- Floating Theme Toggle -->
+    <div class="position-fixed top-0 end-0 p-4" style="z-index: 1050;">
+        <button
+            class="btn shadow-sm rounded-circle p-2 d-flex align-items-center justify-content-center theme-toggle-btn"
+            onclick="toggleTheme()"
+            style="width: 45px; height: 45px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main);">
+            <i class="ph ph-moon-stars fs-5"></i>
+        </button>
+    </div>
+
+    <div class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12" style="max-width: 420px;">
+                    <div class="card border-0 shadow-lg p-4 rounded-5 fade-in">
+                        <div class="text-center mb-4">
+                            <a href="{{ url_for('first') }}" class="mb-4 logo-link d-inline-flex align-items-center justify-content-center gap-2 text-decoration-none">
+                                <div class="bg-primary text-white d-flex align-items-center justify-content-center rounded-3 shadow-sm"
+                                    style="width: 48px; height: 48px;">
+                                    <i class="ph ph-fingerprint fs-2"></i>
+                                </div>
+                                <span class="fw-bold fs-3 text-primary"
+                                    style="letter-spacing: -0.5px;">VerifyNote</span>
+                            </a>
+
+                            <h2 class="fw-bold text-nowrap">Create Account</h2>
+                            <p class="text-muted small">Register to start verifying notes</p>
+
+                            <noscript>
+                                {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                {% for category, message in messages %}
+                                <div class="alert alert-{{ category if category != 'message' else 'info' }} rounded-4 small border-0 shadow-sm text-start"
+                                    role="alert">
+                                    <i class="ph ph-warning-circle me-1"></i> {{ message }}
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+                                {% endwith %}
+                            </noscript>
+                        </div>
+
+                        <form action="{{ url_for('register') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i
+                                            class="ph ph-user text-primary"></i></span>
+                                    <input type="text" class="form-control bg-light border-0" name="uname"
+                                        placeholder="Choose a User ID" autocomplete="username" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i
+                                            class="ph ph-key text-primary"></i></span>
+                                    <input type="password" class="form-control bg-light border-0" name="pass"
+                                        placeholder="Create a Password" autocomplete="new-password" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 rounded-4 mt-2 shadow-sm">
+                                Register <i class="ph ph-user-plus ms-2"></i>
+                            </button>
+
+                            <div class="text-center mt-4">
+                                <p class="text-muted small mb-2">Already have an account? <a
+                                        href="{{ url_for('login') }}"
+                                        class="text-primary fw-bold text-decoration-none">Sign in</a></p>
+                                <a href="{{ url_for('first') }}"
+                                    class="text-decoration-none small text-muted hover-primary">
+                                    <i class="ph ph-caret-left me-1"></i> Back to Home
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

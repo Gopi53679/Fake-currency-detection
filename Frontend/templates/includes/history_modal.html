@@ -1,0 +1,49 @@
+<div id="historyModal" class="history-modal-overlay">
+    <div class="history-modal-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">Total Scan History</h3>
+            <div class="d-flex align-items-center gap-2">
+                {% if recent_scans %}
+                <button class="btn btn-sm btn-outline-danger border-0 rounded-pill px-3 py-1 fw-bold fs-7 d-flex align-items-center gap-1" onclick="clearHistory()">
+                    <i class="ph ph-trash"></i> Clear History
+                </button>
+                {% endif %}
+                <button type="button" class="btn-close" aria-label="Close" onclick="closeHistory()"></button>
+            </div>
+        </div>
+        <div class="history-scroll-area" id="modalHistoryList">
+            {% if recent_scans %}
+                {% for scan in recent_scans %}
+                {% set labelColorClass = 'text-success' if scan.prediction == 'REAL' else ('text-danger' if scan.prediction == 'FAKE' else 'text-warning-custom') %}
+                {% set badgeColorClass = 'bg-success-soft' if scan.prediction == 'REAL' else ('bg-danger-soft' if scan.prediction == 'FAKE' else 'bg-warning-soft') %}
+                <div class="recent-scan-item p-3 rounded-4 mb-3 border-0 shadow-sm d-flex align-items-center justify-content-between" onclick="viewScanResult('{{ scan.prediction }}', '{{ scan.filename }}', '{{ scan.confidence }}')" style="background: var(--bg-main); cursor: pointer; transition: var(--transition-smooth);">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{{ url_for('static', filename='tests/' + scan.filename) }}" class="rounded-3 shadow-sm" style="width: 54px; height: 54px; object-fit: cover; border: 1px solid rgba(0,0,0,0.05);" alt="Scan">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold fs-6 {{ labelColorClass }}">{{ scan.prediction }}</div>
+                            <div class="text-muted smaller opacity-75">ID: #{{ '%06d' % scan.id }} • {{ scan.date_scanned.strftime('%I:%M %p') }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="status-badge py-2 px-3 smaller {{ badgeColorClass }} fw-bold" style="font-size: 0.7rem; min-width: 100px; text-align: center; border: 1px solid rgba(0,0,0,0.05);">
+                            {% if scan.confidence %}Confidence: {{ '%0.1f'|format(scan.confidence) }}%{% else %}Analysed{% endif %}
+                        </div>
+                        <button class="btn btn-sm text-danger opacity-50 hover-opacity-100 p-2 border-0 delete-scan-btn" onclick="deleteScan('{{ scan.id }}'); event.stopPropagation();" data-scan-id="{{ scan.id }}" title="Delete Scan">
+                            <i class="ph ph-trash fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center empty-state-container p-4 mx-3 my-2">
+                    <i class="ph ph-clock-counter-clockwise text-muted floating-icon-empty mb-3" style="font-size: 3.5rem;"></i>
+                    <h5 class="fw-bold fs-6">No History Yet</h5>
+                    <p class="text-muted small mb-0">Your recent scans will securely appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+        <div class="mt-4 text-center">
+            <p class="text-muted small mb-0"><i class="ph ph-lock-key-open me-1"></i> Authenticated History</p>
+        </div>
+    </div>
+</div>
