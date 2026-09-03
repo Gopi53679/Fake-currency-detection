@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: fake-currency-detection
+    env: docker
+    plan: starter # Starter plan recommended (1GB+ RAM needed for 250MB deep CNN model)
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_DEBUG
+        value: "False"

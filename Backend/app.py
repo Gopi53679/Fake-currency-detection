@@ -75,9 +75,9 @@ def inject_global_vars():
     
     return dict(recent_scans=recent_scans, now=datetime.now())
 
-# Create tables if not exist within app context (Managed by Flask-Migrate)
-# with app.app_context():
-#     db.create_all()
+os.makedirs(os.path.dirname(db_path), exist_ok=True)
+with app.app_context():
+    db.create_all()
 
 # Model Configuration & Labelling
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.json')
@@ -339,5 +339,6 @@ def request_entity_too_large(e):
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    # Running with debug=True for development tracking
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() in ('true', '1', 't')
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
